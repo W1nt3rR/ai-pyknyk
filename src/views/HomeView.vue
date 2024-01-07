@@ -27,9 +27,11 @@
                 <div class="mode">
                     <span>{{ manual ? "Manual" : "Automatic" }}</span>
                 </div>
+
                 <div class="header">
                     <div
                         class="agent-selector"
+                        :class="{ selected: selectedAgent === agent }"
                         v-for="agent in agents"
                         :key="agent.name"
                     >
@@ -40,9 +42,11 @@
                         <p>{{ agent.name }}</p>
                     </div>
                 </div>
+
                 <div class="footer">
                     <div
                         class="map-selector"
+                        :class="{ selected: selectedMap === map }"
                         v-for="map in mapsData"
                         :key="map.map_name"
                     >
@@ -424,6 +428,17 @@
                             font-weight: bold;
                             color: white;
                         }
+
+                        &.selected {
+                            img {
+                                filter: brightness(0.6);
+                                cursor: default;
+                            }
+
+                            p {
+                                color: lightgray;
+                            }
+                        }
                     }
                 }
 
@@ -449,7 +464,7 @@
                             height: 60%;
                             aspect-ratio: 1;
 
-                            border: 2px solid rgba($color: #000000, $alpha: 0.75);
+                            border: 2px solid black;
                             border-radius: 50%;
 
                             cursor: pointer;
@@ -470,6 +485,12 @@
                             font-size: 1rem;
                             font-weight: bold;
                             color: white;
+                        }
+
+                        &.selected {
+                            img {
+                                border-color: white;
+                            }
                         }
                     }
                 }
