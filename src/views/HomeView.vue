@@ -1,5 +1,8 @@
 <template>
-    <div class="full-screen-loader" v-if="loading">
+    <div
+        class="full-screen-loader"
+        v-if="loading"
+    >
         <span class="loader"></span>
     </div>
 
@@ -11,6 +14,9 @@
             <img :src="Terrain" />
 
             <div class="map-overlay">
+                <div class="mode">
+                    <span>{{ manual ? "Manual" : "Automatic" }}</span>
+                </div>
                 <div class="header">
                     <div
                         class="agent-selector"
@@ -25,7 +31,11 @@
                     </div>
                 </div>
                 <div class="footer">
-                    <div class="map-selector" v-for="map in mapsData" :key="map.map_name">
+                    <div
+                        class="map-selector"
+                        v-for="map in mapsData"
+                        :key="map.map_name"
+                    >
                         <img
                             @click="selectMap(map)"
                             :src="Map"
@@ -110,6 +120,8 @@
     const agentPosition = ref<IPoint>({ x: 0, y: 0 });
     const agentMoving = ref<boolean>(false);
 
+    const manual = ref<boolean>(true);
+
     const currentStep = ref<number>(0);
     const currentNode = ref<number>(0);
     const steps = ref<Array<IStep> | null>(null);
@@ -140,7 +152,7 @@
 
     function setAgent(agent: AgentInfo) {
         if (selectedAgent.value === agent) return;
-        
+
         selectedAgent.value = agent;
         calculateSteps();
     }
@@ -205,16 +217,20 @@
     function setupKeyboardShortcuts() {
         window.addEventListener("keydown", (event) => {
             if (event.key === "ArrowRight") {
+                if (!manual.value) return;
                 event.preventDefault();
                 moveAgentForward();
             } else if (event.key === "ArrowLeft") {
+                if (!manual.value) return;
                 event.preventDefault();
                 moveAgentBackward();
             } else if (event.key === "Enter") {
                 if (!selectedMap.value) return;
                 event.preventDefault();
-
                 moveAgent(selectedMap.value.coins.length);
+            } else if (event.key.toLocaleLowerCase() === "s") {
+                event.preventDefault();
+                manual.value = !manual.value;
             }
         });
     }
@@ -242,6 +258,10 @@
     onMounted(async () => {
         setupKeyboardShortcuts();
         await setupMaps();
+
+        setInterval(() => {
+            if (!manual.value) moveAgentForward();
+        }, 1000);
     });
 </script>
 
@@ -333,6 +353,15 @@
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
+
+                .mode {
+                    position: absolute;
+                    top: 10px;
+                    left: 10px;
+
+                    color: #ffffff;
+                    font-weight: bold;
+                }
 
                 .header {
                     width: 100%;
@@ -498,7 +527,7 @@
     .loader {
         width: 48px;
         height: 48px;
-        border: 5px solid rgba($color: #FFFFFF, $alpha: 0.75);
+        border: 5px solid rgba($color: #ffffff, $alpha: 0.75);
         border-bottom-color: transparent;
         border-radius: 50%;
         display: inline-block;
