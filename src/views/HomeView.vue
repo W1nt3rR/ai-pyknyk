@@ -354,6 +354,8 @@
                 flex-direction: column;
                 justify-content: space-between;
 
+                z-index: 10;
+
                 .mode {
                     position: absolute;
                     top: 10px;
@@ -365,7 +367,7 @@
 
                 .header {
                     width: 100%;
-                    height: 15%;
+                    height: 100px;
 
                     display: flex;
                     align-items: center;
@@ -408,7 +410,7 @@
 
                 .footer {
                     width: 100%;
-                    height: 15%;
+                    height: 100px;
 
                     display: flex;
                     align-items: center;
@@ -428,6 +430,7 @@
                             height: 60%;
                             aspect-ratio: 1;
 
+                            border: 2px solid rgba($color: #000000, $alpha: 0.75);
                             border-radius: 50%;
 
                             cursor: pointer;
