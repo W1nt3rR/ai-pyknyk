@@ -1,9 +1,19 @@
 <template>
     <div
-        class="full-screen-loader"
-        v-if="loading"
+        class="full-screen-overlay"
+        v-if="loading || paused"
     >
-        <span class="loader"></span>
+        <span
+            v-if="loading"
+            class="loader"
+        ></span>
+
+        <span
+            v-else-if="paused"
+            class="paused"
+        >
+            Paused
+        </span>
     </div>
 
     <div id="home">
@@ -121,6 +131,7 @@
     const agentMoving = ref<boolean>(false);
 
     const manual = ref<boolean>(true);
+    const paused = ref<boolean>(false);
 
     const currentStep = ref<number>(0);
     const currentNode = ref<number>(0);
@@ -231,6 +242,12 @@
             } else if (event.key.toLocaleLowerCase() === "s") {
                 event.preventDefault();
                 manual.value = !manual.value;
+            } else if (event.key.toLocaleLowerCase() === "r") {
+                event.preventDefault();
+                moveAgent(0);
+            } else if (event.code === "Space") {
+                event.preventDefault();
+                paused.value = !paused.value;
             }
         });
     }
@@ -260,7 +277,9 @@
         await setupMaps();
 
         setInterval(() => {
-            if (!manual.value) moveAgentForward();
+            if (paused.value) return;
+            if (manual.value) return;
+            moveAgentForward();
         }, 1000);
     });
 </script>
@@ -511,7 +530,7 @@
         }
     }
 
-    .full-screen-loader {
+    .full-screen-overlay {
         position: fixed;
         top: 0;
         left: 0;
@@ -525,6 +544,12 @@
         display: flex;
         justify-content: center;
         align-items: center;
+
+        .paused {
+            font-size: 4rem;
+            font-weight: bold;
+            color: white;
+        }
     }
 
     .loader {
