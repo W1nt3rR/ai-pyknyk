@@ -24,7 +24,15 @@
                         <p>{{ agent.name }}</p>
                     </div>
                 </div>
-                <div class="footer"></div>
+                <div class="footer">
+                    <div class="map-selector" v-for="map in mapsData" :key="map.map_name">
+                        <img
+                            @click="selectMap(map)"
+                            :src="Map"
+                        />
+                        <p>{{ map.map_name }}</p>
+                    </div>
+                </div>
             </div>
 
             <div
@@ -75,6 +83,7 @@
     import Client, { type Agent, type IPoint, type IStep, type MapData } from "@/Client";
 
     import Terrain from "@/assets/maps/terrain_upscaled.png";
+    import Map from "@/assets/maps/terrain.png";
     import Coin from "@/assets/icons/coin.png";
 
     import Aki from "@/assets/icons/Aki.png";
@@ -130,6 +139,8 @@
     }
 
     function setAgent(agent: AgentInfo) {
+        if (selectedAgent.value === agent) return;
+        
         selectedAgent.value = agent;
         calculateSteps();
     }
@@ -154,10 +165,10 @@
     }
 
     function selectMap(map: MapData) {
-        selectedMap.value = map;
+        if (selectedMap.value === map) return;
 
-        // Reset agent position
-        setAgentPosition(map.coins[0]);
+        selectedMap.value = map;
+        calculateSteps();
     }
 
     function setAgentPosition(point: IPoint) {
@@ -343,6 +354,52 @@
 
                         img {
                             height: 60%;
+
+                            cursor: pointer;
+
+                            transition: filter 0.2s;
+
+                            &:hover {
+                                filter: brightness(1.2);
+                            }
+
+                            &:active {
+                                filter: brightness(0.8);
+                            }
+                        }
+
+                        p {
+                            margin: 0;
+                            font-size: 1rem;
+                            font-weight: bold;
+                            color: white;
+                        }
+                    }
+                }
+
+                .footer {
+                    width: 100%;
+                    height: 15%;
+
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    gap: 20px;
+
+                    .map-selector {
+                        height: 100%;
+
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        align-items: center;
+
+                        img {
+                            height: 60%;
+                            aspect-ratio: 1;
+
+                            border-radius: 50%;
 
                             cursor: pointer;
 
