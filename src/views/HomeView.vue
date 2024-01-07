@@ -1,4 +1,8 @@
 <template>
+    <div class="full-screen-loader" v-if="loading">
+        <span class="loader"></span>
+    </div>
+
     <div id="home">
         <div
             class="map"
@@ -46,20 +50,28 @@
                 <img :src="selectedAgent.icon" />
             </div>
         </div>
-        <div class="steps">
-            <div
-                class="step"
-                v-for="num in currentStep"
-                :key="`step-${num}`"
-            >
-                <p>{{ `Step: ${steps?.[num].step} | ${steps?.[num].from_node} -> ${steps?.[num].to_node} | Cost: ${steps?.[num].cost}` }}</p>
+        <div class="steps-container">
+            <div class="steps">
+                <div
+                    class="step"
+                    v-for="num in currentStep"
+                    :key="`step-${num}`"
+                >
+                    <span>Step: {{ steps?.[num].step }}</span>
+                    <span>{{ steps?.[num].from_node }} -> {{ steps?.[num].to_node }}</span>
+                    <span>{{ steps?.[num].cost }}</span>
+                </div>
+            </div>
+            <div class="costs">
+                <span>Current cost: {{ currentCost }}</span>
+                <span>Final cost: {{ finalCost }}</span>
             </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-    import { onMounted, ref } from "vue";
+    import { onMounted, ref, computed } from "vue";
     import Client, { type Agent, type IPoint, type IStep, type MapData } from "@/Client";
 
     import Terrain from "@/assets/maps/terrain_upscaled.png";
@@ -94,6 +106,18 @@
     const steps = ref<Array<IStep> | null>(null);
 
     const mapRef = ref<HTMLElement | null>(null);
+
+    const finalCost = computed(() => {
+        if (!steps.value) return 0;
+
+        return steps.value.reduce((acc, step) => acc + step.cost, 0);
+    });
+
+    const currentCost = computed(() => {
+        if (!steps.value) return 0;
+
+        return steps.value.slice(0, currentStep.value + 1).reduce((acc, step) => acc + step.cost, 0);
+    });
 
     function scaleCoinX(x: number) {
         if (!mapRef.value) return 0;
@@ -192,7 +216,15 @@
 
         setAgentPosition(selectedMap.value.coins[currentNode.value]);
 
-        steps.value = await Client.calculateSteps(selectedMap.value.map_name, selectedAgent.value.name);
+        loading.value = true;
+
+        try {
+            steps.value = await Client.calculateSteps(selectedMap.value.map_name, selectedAgent.value.name);
+        } catch (error) {
+            console.log("Calculate steps error:", error);
+        }
+
+        loading.value = false;
     }
 
     // Lifecycle
@@ -210,6 +242,8 @@
         background-color: rgb(69, 69, 69);
 
         display: flex;
+        gap: 20px;
+        padding: 50px;
 
         .map {
             position: relative;
@@ -228,8 +262,8 @@
 
             .agent {
                 position: absolute;
-                width: 100px;
-                height: 100px;
+                width: 90px;
+                height: 90px;
 
                 display: flex;
                 justify-content: center;
@@ -273,10 +307,8 @@
 
                 span {
                     position: absolute;
-                    top: 15px;
-                    left: 20px;
 
-                    font-size: 1.1rem;
+                    font-size: 1rem;
                     font-weight: bold;
                     color: black;
                 }
@@ -336,31 +368,93 @@
             }
         }
 
-        .steps {
+        .steps-container {
             width: 100%;
             height: 100%;
+            padding-block: 20px;
+
+            border: 2px solid gray;
 
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
 
             font-weight: bold;
             color: white;
 
-            .step {
+            .steps {
                 width: 100%;
-                height: 50px;
+                overflow-y: auto;
+
+                flex-grow: 1;
+
+                .step {
+                    width: 100%;
+                    height: 40px;
+                    padding-inline: 40px;
+
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+
+                    border-radius: 50%;
+                    background-color: rgb(69, 69, 69);
+
+                    transition: background-color 0.2s;
+                }
+            }
+
+            .costs {
+                width: 100%;
+                height: 40px;
+                padding-inline: 40px;
 
                 display: flex;
-                justify-content: center;
+
                 align-items: center;
+                justify-content: space-between;
 
                 border-radius: 50%;
                 background-color: rgb(69, 69, 69);
 
                 transition: background-color 0.2s;
             }
+        }
+    }
+
+    .full-screen-loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 9999;
+
+        width: 100vw;
+        height: 100vh;
+
+        background-color: rgba(0, 0, 0, 0.5);
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .loader {
+        width: 48px;
+        height: 48px;
+        border: 5px solid rgba($color: #FFFFFF, $alpha: 0.75);
+        border-bottom-color: transparent;
+        border-radius: 50%;
+        display: inline-block;
+        box-sizing: border-box;
+        animation: rotation 1s linear infinite;
+    }
+
+    @keyframes rotation {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
         }
     }
 </style>
