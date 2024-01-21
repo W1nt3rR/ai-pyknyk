@@ -20,6 +20,7 @@
         <div
             class="map"
             ref="mapRef"
+            v-resize="calculateScale"
         >
             <img :src="Terrain" />
 
@@ -64,8 +65,8 @@
                 v-for="(coin, index) in selectedMap?.coins"
                 :key="`coin-${index}`"
                 :style="{
-                    left: scaleCoinX(coin.x) + 'px',
-                    top: scaleCoinY(coin.y) + 'px',
+                    left: xScale * coin.x + 'px',
+                    top: yScale * coin.y + 'px',
                 }"
             >
                 <img :src="Coin" />
@@ -75,8 +76,8 @@
             <div
                 class="agent"
                 :style="{
-                    left: scaleCoinX(agentPosition.x) + 'px',
-                    top: scaleCoinY(agentPosition.y) + 'px',
+                    left: xScale * agentPosition.x + 'px',
+                    top: yScale * agentPosition.y + 'px',
                 }"
             >
                 <img :src="selectedAgent.icon" />
@@ -105,6 +106,7 @@
 <script setup lang="ts">
     import { onMounted, ref, computed } from "vue";
     import Client, { type Agent, type IPoint, type IStep, type MapData } from "@/Client";
+    import { vResize } from "../vueDirectives";
 
     import Terrain from "@/assets/maps/terrain_upscaled.png";
     import Map from "@/assets/maps/terrain.png";
@@ -155,14 +157,14 @@
         return steps.value.slice(0, currentStep.value + 1).reduce((acc, step) => acc + step.cost, 0);
     });
 
-    function scaleCoinX(x: number) {
-        if (!mapRef.value) return 0;
-        return (x / 1000) * mapRef.value.clientWidth;
-    }
+    const xScale = ref<number>(0);
+    const yScale = ref<number>(0);
 
-    function scaleCoinY(y: number) {
+    function calculateScale() {
         if (!mapRef.value) return 0;
-        return (y / 600) * mapRef.value.clientHeight;
+
+        xScale.value = mapRef.value.clientWidth / 1000;
+        yScale.value = mapRef.value.clientHeight / 600;
     }
 
     function setAgent(agent: AgentInfo) {
@@ -279,6 +281,7 @@
     onMounted(async () => {
         setupKeyboardShortcuts();
         await setupMaps();
+        calculateScale();
 
         setInterval(() => {
             if (paused.value) return;
