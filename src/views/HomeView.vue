@@ -549,6 +549,24 @@
                 transition: background-color 0.2s;
             }
         }
+
+        @media (max-width: 1669px) {
+            flex-direction: column;
+
+            .map {
+                width: 100%;
+                height: unset;
+            }
+        }
+
+        @media (max-width: 1000px) {
+            padding: 20px;
+
+            .steps-container {
+                padding-block: 10px;
+                flex-grow: 1;
+            }
+        }
     }
 
     .full-screen-overlay {
