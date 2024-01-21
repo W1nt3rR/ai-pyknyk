@@ -30,4 +30,6 @@ coverage
 *.tsbuildinfo
 
 .env
+.env.development
+.env.production
 *.pdn
